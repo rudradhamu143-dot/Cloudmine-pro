@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>CloudMine Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d1117;--bg2:#161b22;--bg3:#21262d;--bg4:#30363d;
+  --border:#30363d;--text:#e6edf3;--text2:#8b949e;--text3:#484f58;
+  --green:#2ea043;--green-bg:#0d2a0d;--green-light:#3fb950;
+  --blue:#1f6feb;--blue-bg:#0d2038;--blue-light:#58a6ff;
+  --amber:#d29922;--amber-bg:#271e00;--amber-light:#e3b341;
+  --purple:#6e40c9;--purple-bg:#1c1035;--purple-light:#a5a0f5;
+  --red:#da3633;--red-bg:#2d0f0f;--red-light:#f85149;
+  --radius:8px;--radius-lg:12px;
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+*{box-sizing:border-box}
+
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.logo{font-size:16px;font-weight:600}.logo span{color:var(--green-light)}
+.top-right{display:flex;align-items:center;gap:8px}
+.live-badge{background:var(--green-bg);color:var(--green-light);font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid var(--green);display:flex;align-items:center;gap:5px}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green-light);animation:pulse 1.4s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.bal-badge{background:var(--bg3);border:1px solid var(--border);font-size:12px;padding:4px 12px;border-radius:20px;font-family:'JetBrains Mono',monospace;color:var(--green-light);font-weight:500}
+
+.nav{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);overflow-x:auto;-webkit-overflow-scrolling:touch}
+.nav::-webkit-scrollbar{display:none}
+.nav-btn{padding:11px 14px;font-size:13px;font-weight:500;color:var(--text2);background:transparent;border:none;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;transition:all 0.15s;font-family:'Inter',sans-serif}
+.nav-btn.active{color:var(--green-light);border-bottom-color:var(--green-light)}
+
+.section{display:none;padding:16px;max-width:900px;margin:0 auto}
+.section.active{display:block}
+
+.metric-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+@media(min-width:600px){.metric-grid{grid-template-columns:repeat(4,1fr)}}
+.metric{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px}
+.metric-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px}
+.metric-val{font-size:20px;font-weight:600;color:var(--text);font-family:'JetBrains Mono',monospace}
+.metric-sub{font-size:11px;color:var(--text3);margin-top:3px}
+
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:12px}
+.card-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:14px}
+
+.contract-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--border)}
+.contract-row:last-child{border-bottom:none}
+.coin-icon{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
+.ci-BTC{background:var(--amber-bg);color:var(--amber-light);border:1px solid var(--amber)}
+.ci-ETH,.ci-ETC{background:var(--blue-bg);color:var(--blue-light);border:1px solid var(--blue)}
+.ci-LTC{background:var(--purple-bg);color:var(--purple-light);border:1px solid var(--purple)}
+.ci-XMR{background:var(--red-bg);color:var(--red-light);border:1px solid var(--red)}
+.contract-info{flex:1;min-width:0}
+.contract-name{font-size:13px;font-weight:500;color:var(--text)}
+.contract-meta{font-size:11px;color:var(--text2);margin-top:2px}
+.progress-bar{background:var(--bg3);border-radius:4px;height:4px;margin-top:6px;overflow:hidden}
+.progress-fill{height:100%;background:var(--green);border-radius:4px;transition:width 1s}
+.contract-earn{text-align:right;flex-shrink:0}
+.earn-val{font-size:13px;font-weight:600;color:var(--green-light);font-family:'JetBrains Mono',monospace}
+.earn-label{font-size:10px;color:var(--text3);margin-top:1px}
+
+.badge{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:500;display:inline-block;margin-top:4px}
+.badge-active{background:var(--green-bg);color:var(--green-light);border:1px solid var(--green)}
+.badge-boost{background:var(--amber-bg);color:var(--amber-light);border:1px solid var(--amber)}
+
+.plans-grid{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:14px}
+@media(min-width:500px){.plans-grid{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:750px){.plans-grid{grid-template-columns:repeat(3,1fr)}}
+.plan-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;transition:border-color 0.2s}
+.plan-card:hover{border-color:var(--green)}
+.plan-card.featured{border:1px solid var(--green)}
+.plan-badge{font-size:11px;padding:3px 10px;border-radius:10px;display:inline-block;margin-bottom:10px;font-weight:500}
+.pb-green{background:var(--green-bg);color:var(--green-light);border:1px solid var(--green)}
+.pb-blue{background:var(--blue-bg);color:var(--blue-light);border:1px solid var(--blue)}
+.pb-purple{background:var(--purple-bg);color:var(--purple-light);border:1px solid var(--purple)}
+.pb-red{background:var(--red-bg);color:var(--red-light);border:1px solid var(--red)}
+.pb-amber{background:var(--amber-bg);color:var(--amber-light);border:1px solid var(--amber)}
+.plan-name{font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px}
+.plan-price{font-size:24px;font-weight:700;color:var(--text);margin-bottom:10px;font-family:'JetBrains Mono',monospace}
+.plan-price span{font-size:13px;font-weight:400;color:var(--text2);font-family:'Inter',sans-serif}
+.plan-feature{font-size:12px;color:var(--text2);padding:5px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between}
+.plan-feature:last-of-type{border-bottom:none}
+.plan-feature b{color:var(--text);font-weight:500}
+.buy-btn{width:100%;margin-top:14px;padding:10px;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg3);color:var(--text);font-size:13px;cursor:pointer;font-weight:500;transition:all 0.15s;font-family:'Inter',sans-serif}
+.buy-btn:hover{background:var(--bg4)}
+.buy-btn.primary{background:var(--green-bg);color:var(--green-light);border-color:var(--green)}
+.buy-btn.primary:hover{background:#143a14}
+
+.wallet-grid{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:14px}
+@media(min-width:600px){.wallet-grid{grid-template-columns:1fr 1fr}}
+.addr-box{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;font-size:11px;color:var(--text2);font-family:'JetBrains Mono',monospace;word-break:break-all;margin-top:6px;line-height:1.5}
+.tx-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px}
+.tx-row:last-child{border-bottom:none}
+.tx-type{color:var(--text2);font-size:11px;margin-top:2px}
+.tx-in{color:var(--green-light);font-family:'JetBrains Mono',monospace;font-weight:500}
+.tx-out{color:var(--red-light);font-family:'JetBrains Mono',monospace;font-weight:500}
+
+label{font-size:12px;color:var(--text2);display:block;margin-bottom:5px}
+input,select{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg3);color:var(--text);font-size:13px;margin-bottom:12px;font-family:'Inter',sans-serif;outline:none;transition:border-color 0.15s}
+input:focus,select:focus{border-color:var(--blue-light)}
+select option{background:var(--bg3)}
+.form-btn{width:100%;padding:11px;background:var(--green-bg);color:var(--green-light);border:1px solid var(--green);border-radius:var(--radius);font-size:13px;cursor:pointer;font-weight:600;font-family:'Inter',sans-serif;transition:background 0.15s}
+.form-btn:hover{background:#143a14}
+.form-btn.secondary{background:var(--bg3);color:var(--text);border-color:var(--border)}
+.form-btn.secondary:hover{background:var(--bg4)}
+
+.ref-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.ref-stat{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;text-align:center}
+.ref-code{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px;font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:var(--green-light);text-align:center;letter-spacing:4px;margin-bottom:10px}
+.step-grid{display:grid;grid-template-columns:1fr;gap:10px}
+@media(min-width:500px){.step-grid{grid-template-columns:repeat(3,1fr)}}
+.step{background:var(--bg3);border-radius:var(--radius);padding:14px;text-align:center}
+.step-num{width:32px;height:32px;border-radius:50%;background:var(--green-bg);border:1px solid var(--green);color:var(--green-light);font-weight:600;font-size:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px}
+.step-title{font-size:13px;font-weight:500;color:var(--text);margin-bottom:4px}
+.step-desc{font-size:12px;color:var(--text2);line-height:1.5}
+
+.chart-wrap{position:relative;height:150px;margin-top:8px}
+.pool-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(min-width:500px){.pool-grid{grid-template-columns:repeat(4,1fr)}}
+.pool-item{background:var(--bg3);border-radius:var(--radius);padding:10px}
+.pool-name{font-size:12px;color:var(--text2);margin-bottom:4px}
+.pool-status{font-size:13px;font-weight:500;color:var(--green-light);margin-bottom:2px}
+.pool-addr{font-size:11px;color:var(--text3)}
+
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid var(--green);color:var(--green-light);font-size:13px;padding:10px 20px;border-radius:20px;z-index:9999;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;font-weight:500;max-width:90vw;text-align:center}
+.toast.show{opacity:1}
+.toast.warn{border-color:var(--amber);color:var(--amber-light)}
+
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:500;align-items:center;justify-content:center;padding:16px}
+.modal-overlay.show{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;width:100%;max-width:380px}
+.modal-title{font-size:15px;font-weight:600;margin-bottom:16px;color:var(--text)}
+.modal-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px}
+.modal-row:last-child{border-bottom:none}
+.modal-key{color:var(--text2)}
+.modal-val{color:var(--text);font-weight:500;font-family:'JetBrains Mono',monospace}
+.modal-btns{display:flex;gap:8px;margin-top:16px}
+.empty{color:var(--text3);font-size:13px;padding:24px 0;text-align:center}
+
+/* AD MODAL */
+.ad-shell{background:var(--bg2);border:1px solid var(--amber);border-radius:var(--radius-lg);width:100%;max-width:400px;overflow:hidden}
+.ad-header{background:var(--amber-bg);border-bottom:1px solid var(--amber);padding:10px 16px;display:flex;justify-content:space-between;align-items:center}
+.ad-header-title{font-size:12px;color:var(--amber-light);font-weight:600;letter-spacing:0.5px}
+.ad-timer-badge{background:var(--amber);color:#1a1000;font-size:13px;font-weight:700;padding:3px 12px;border-radius:10px;font-family:'JetBrains Mono',monospace;min-width:54px;text-align:center}
+.ad-body{padding:20px}
+.ad-sponsor{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.ad-brand{font-size:22px;font-weight:700;color:var(--text);margin-bottom:4px}
+.ad-tagline{font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.5}
+.ad-visual{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);height:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;margin-bottom:14px;gap:8px}
+.ad-play-icon{font-size:28px}
+.ad-play-text{font-size:12px;color:var(--text3)}
+.ad-prog-wrap{background:var(--bg3);border-radius:4px;height:6px;margin-bottom:12px;overflow:hidden}
+.ad-prog-fill{height:100%;background:var(--amber);border-radius:4px;transition:width 1s linear;width:0%}
+.ad-reward-box{background:var(--green-bg);border:1px solid var(--green);border-radius:var(--radius);padding:10px 14px;display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.ad-reward-text{font-size:13px;color:var(--green-light);font-weight:500}
+.ad-reward-sub{font-size:11px;color:var(--green);margin-top:2px}
+.ad-claim-btn{width:100%;padding:12px;background:var(--green-bg);color:var(--green-light);border:1px solid var(--green);border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:background 0.15s;margin-bottom:8px}
+.ad-claim-btn:disabled{opacity:0.4;cursor:not-allowed;background:var(--bg3);border-color:var(--border);color:var(--text3)}
+.ad-claim-btn:not(:disabled):hover{background:#143a14}
+.ad-skip-btn{width:100%;padding:8px;background:transparent;color:var(--text3);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;cursor:pointer;font-family:'Inter',sans-serif}
+.ad-skip-btn:hover{color:var(--text2);border-color:var(--text3)}
+
+/* ADS PAGE */
+.ads-limit-bar{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-size:13px}
+.ads-limit-label{color:var(--text2)}
+.ads-limit-val{color:var(--text);font-weight:600;font-family:'JetBrains Mono',monospace}
+.ads-grid{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:14px}
+@media(min-width:500px){.ads-grid{grid-template-columns:1fr 1fr}}
+.ad-offer-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;position:relative}
+.sponsored-label{position:absolute;top:10px;right:12px;font-size:9px;color:var(--text3);letter-spacing:1px;text-transform:uppercase}
+.ad-offer-icon{width:44px;height:44px;border-radius:var(--radius);background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:10px}
+.ad-offer-name{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px}
+.ad-offer-desc{font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.5}
+.ad-offer-reward{background:var(--green-bg);border:1px solid var(--green);border-radius:var(--radius);padding:8px 12px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.ad-offer-reward-label{font-size:11px;color:var(--green-light)}
+.ad-offer-reward-val{font-size:13px;font-weight:600;color:var(--green-light);font-family:'JetBrains Mono',monospace}
+.watch-btn{width:100%;padding:10px;background:var(--amber-bg);color:var(--amber-light);border:1px solid var(--amber);border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.15s}
+.watch-btn:hover{background:#3d2d00}
+.watch-btn:disabled{opacity:0.4;cursor:not-allowed;background:var(--bg3);border-color:var(--border);color:var(--text3)}
+.boost-banner{background:var(--bg3);border:1px solid var(--green);border-radius:var(--radius);padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px}
+.boost-dot{width:8px;height:8px;border-radius:50%;background:var(--green-light);animation:pulse 1.4s infinite;flex-shrink:0}
+.boost-text{font-size:13px;color:var(--green-light);font-weight:500}
+.boost-sub{font-size:11px;color:var(--text2);margin-top:2px}
+.speed-bar-wrap{background:var(--bg);border-radius:4px;height:6px;overflow:hidden}
+.speed-bar-fill{height:100%;background:var(--green-light);border-radius:4px;transition:width 0.5s}
+
+/* DAILY REWARD */
+.daily-header{text-align:center;margin-bottom:16px}
+.daily-header h2{font-size:18px;font-weight:600;color:var(--text);margin-bottom:4px}
+.daily-header p{font-size:13px;color:var(--text2)}
+.daily-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:14px}
+.day-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:8px 3px;text-align:center;position:relative;transition:all 0.2s}
+.day-card.claimed{background:var(--green-bg);border-color:var(--green)}
+.day-card.today{border-color:var(--amber);background:var(--amber-bg)}
+.day-card.locked{opacity:0.35}
+.day-card.special{border-color:var(--purple-light)}
+.day-label{font-size:9px;color:var(--text2);margin-bottom:3px;font-weight:500}
+.day-card.claimed .day-label{color:var(--green-light)}
+.day-card.today .day-label{color:var(--amber-light)}
+.day-icon{font-size:15px;margin-bottom:3px}
+.day-reward{font-size:9px;font-weight:600;color:var(--text3);line-height:1.2}
+.day-card.claimed .day-reward{color:var(--green-light)}
+.day-card.today .day-reward{color:var(--amber-light)}
+.day-card.special .day-reward{color:var(--purple-light)}
+.day-check{position:absolute;top:2px;right:3px;font-size:9px;color:var(--green-light)}
+.claim-day-btn{width:100%;padding:13px;background:var(--amber-bg);color:var(--amber-light);border:1px solid var(--amber);border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.15s;margin-bottom:12px}
+.claim-day-btn:hover{background:#3d2d00}
+.claim-day-btn:disabled{background:var(--bg3);border-color:var(--border);color:var(--text3);cursor:not-allowed}
+.weekly-info{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px}
+.weekly-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px}
+.weekly-row:last-child{border-bottom:none}
+.weekly-key{color:var(--text2)}
+.weekly-val{color:var(--text);font-weight:500}
+.daily-active-box{background:var(--bg3);border:1px solid var(--green);border-radius:var(--radius);padding:12px 14px;margin-bottom:12px}
+.daily-active-title{font-size:12px;color:var(--green-light);font-weight:600;margin-bottom:8px}
+.speed-row{display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px}
+.speed-label{color:var(--text2)}
+.speed-val{color:var(--green-light);font-family:'JetBrains Mono',monospace;font-weight:600}
+
+/* REWARD CLAIMED MODAL */
+.reward-modal{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;width:100%;max-width:320px;text-align:center}
+.reward-modal-icon{font-size:48px;margin-bottom:12px}
+.reward-modal-title{font-size:16px;font-weight:600;color:var(--text);margin-bottom:6px}
+.reward-modal-desc{font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.5}
+.reward-modal-speed{background:var(--green-bg);border:1px solid var(--green);border-radius:var(--radius);padding:14px;margin-bottom:16px}
+.reward-modal-speed-label{font-size:11px;color:var(--green-light);margin-bottom:4px}
+.reward-modal-speed-val{font-size:28px;font-weight:700;color:var(--green-light);font-family:'JetBrains Mono',monospace}
+
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<!-- PLAN CONFIRM MODAL -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">Confirm Purchase</div>
+    <div id="modalBody"></div>
+    <div class="modal-btns">
+      <button class="form-btn secondary" onclick="closeModal()">Cancel</button>
+      <button class="form-btn" id="modalConfirmBtn">Confirm &amp; Activate</button>
+    </div>
+  </div>
+</div>
+
+<!-- AD MODAL -->
+<div class="modal-overlay" id="adModal">
+  <div class="ad-shell">
+    <div class="ad-header">
+      <span class="ad-header-title">SPONSORED AD</span>
+      <span class="ad-timer-badge" id="adTimerBadge">0:30</span>
+    </div>
+    <div class="ad-body">
+      <div class="ad-sponsor">Advertisement</div>
+      <div class="ad-brand" id="adBrand">NiceHash</div>
+      <div class="ad-tagline" id="adTagline">The world's leading crypto mining marketplace.</div>
+      <div class="ad-visual">
+        <div class="ad-play-icon">&#9654;</div>
+        <div class="ad-play-text">Ad video playing...</div>
+      </div>
+      <div class="ad-prog-wrap"><div class="ad-prog-fill" id="adProgFill"></div></div>
+      <div class="ad-reward-box">
+        <div style="font-size:20px">&#9889;</div>
+        <div>
+          <div class="ad-reward-text">Reward: +10 GH/s Speed Boost</div>
+          <div class="ad-reward-sub">Active for 30 minutes after claiming</div>
+        </div>
+      </div>
+      <button class="ad-claim-btn" id="adClaimBtn" disabled onclick="claimAdReward()">Watch to unlock reward...</button>
+      <button class="ad-skip-btn" onclick="skipAd()">Skip ad (no reward)</button>
+    </div>
+  </div>
+</div>
+
+<!-- DAILY REWARD CLAIMED MODAL -->
+<div class="modal-overlay" id="rewardModal">
+  <div class="reward-modal">
+    <div class="reward-modal-icon" id="rmIcon">&#127873;</div>
+    <div class="reward-modal-title" id="rmTitle">Day 1 Reward Claimed!</div>
+    <div class="reward-modal-desc" id="rmDesc">Keep your streak going for bigger rewards!</div>
+    <div class="reward-modal-speed">
+      <div class="reward-modal-speed-label">SPEED BOOST ADDED</div>
+      <div class="reward-modal-speed-val" id="rmSpeed">+5 GH/s</div>
+    </div>
+    <button class="form-btn" onclick="closeRewardModal()">Awesome!</button>
+  </div>
+</div>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="logo">Cloud<span>Mine</span> Pro</div>
+  <div class="top-right">
+    <div class="live-badge"><span class="live-dot"></span> Live</div>
+    <div class="bal-badge" id="balBadge">$0.00</div>
+  </div>
+</div>
+
+<div class="nav">
+  <button class="nav-btn active" onclick="tab('dash',this)">Dashboard</button>
+  <button class="nav-btn" onclick="tab('plans',this)">Mining Plans</button>
+  <button class="nav-btn" onclick="tab('ads',this)">Watch Ads &#9889;</button>
+  <button class="nav-btn" onclick="tab('daily',this)">Daily Reward &#127873;</button>
+  <button class="nav-btn" onclick="tab('wallet',this)">Wallet</button>
+  <button class="nav-btn" onclick="tab('ref',this)">Referral</button>
+</div>
+
+<!-- DASHBOARD -->
+<div class="section active" id="sec-dash">
+  <div class="metric-grid">
+    <div class="metric"><div class="metric-label">Total Earned</div><div class="metric-val" id="mTotal">$0.00</div><div class="metric-sub">All time</div></div>
+    <div class="metric"><div class="metric-label">Today's Profit</div><div class="metric-val" id="mToday">$0.0000</div><div class="metric-sub">Since midnight</div></div>
+    <div class="metric"><div class="metric-label">Active Plans</div><div class="metric-val" id="mActive">0</div><div class="metric-sub">Running now</div></div>
+    <div class="metric"><div class="metric-label">Total Speed</div><div class="metric-val" id="mSpeed">0</div><div class="metric-sub">GH/s combined</div></div>
+  </div>
+  <div id="dashBoostBanner" style="display:none" class="boost-banner">
+    <div class="boost-dot"></div>
+    <div><div class="boost-text">&#9889; Ad Boost Active</div><div class="boost-sub" id="dashBoostSub">+10 GH/s — 30:00 remaining</div></div>
+  </div>
+  <div id="dashDailyBanner" style="display:none" class="boost-banner" style="border-color:var(--amber)">
+    <div class="boost-dot" style="background:var(--amber-light)"></div>
+    <div><div class="boost-text" style="color:var(--amber-light)">&#127873; Daily Reward Active</div><div class="boost-sub" id="dashDailySub">+5 GH/s from daily streak</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Active Contracts</div>
+    <div id="contractList"><div class="empty">No active contracts. Go to Mining Plans to start.</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Earnings — Last 24 Hours</div>
+    <div class="chart-wrap"><canvas id="earningsChart"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Pool Status</div>
+    <div class="pool-grid">
+      <div class="pool-item"><div class="pool-name">Bitcoin</div><div class="pool-status">&#9679; Online</div><div class="pool-addr">antpool.com</div></div>
+      <div class="pool-item"><div class="pool-name">Ethereum</div><div class="pool-status">&#9679; Online</div><div class="pool-addr">ethermine.org</div></div>
+      <div class="pool-item"><div class="pool-name">Litecoin</div><div class="pool-status">&#9679; Online</div><div class="pool-addr">ltc.f2pool.com</div></div>
+      <div class="pool-item"><div class="pool-name">Monero</div><div class="pool-status">&#9679; Online</div><div class="pool-addr">supportxmr.com</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- PLANS -->
+<div class="section" id="sec-plans">
+  <div class="plans-grid">
+    <div class="plan-card"><div class="plan-badge pb-green">Starter</div><div class="plan-name">Basic BTC</div><div class="plan-price">$49 <span>/ month</span></div><div class="plan-feature"><span>Hashrate</span><b>1 TH/s</b></div><div class="plan-feature"><span>Daily profit</span><b>~$0.80</b></div><div class="plan-feature"><span>Contract</span><b>30 days</b></div><div class="plan-feature"><span>Coin</span><b>Bitcoin</b></div><button class="buy-btn" onclick="confirmPlan('Basic BTC','BTC',1,'TH/s',49,0.80,30)">Buy Plan</button></div>
+    <div class="plan-card featured"><div class="plan-badge pb-green">Most Popular</div><div class="plan-name">Pro BTC</div><div class="plan-price">$149 <span>/ month</span></div><div class="plan-feature"><span>Hashrate</span><b>5 TH/s</b></div><div class="plan-feature"><span>Daily profit</span><b>~$3.20</b></div><div class="plan-feature"><span>Contract</span><b>60 days</b></div><div class="plan-feature"><span>Coin</span><b>Bitcoin</b></div><button class="buy-btn primary" onclick="confirmPlan('Pro BTC','BTC',5,'TH/s',149,3.20,60)">Buy Plan</button></div>
+    <div class="plan-card"><div class="plan-badge pb-amber">Enterprise</div><div class="plan-name">Elite BTC</div><div class="plan-price">$499 <span>/ month</span></div><div class="plan-feature"><span>Hashrate</span><b>20 TH/s</b></div><div class="plan-feature"><span>Daily profit</span><b>~$12.00</b></div><div class="plan-feature"><span>Contract</span><b>90 days</b></div><div class="plan-feature"><span>Coin</span><b>Bitcoin</b></div><button class="buy-btn" onclick="confirmPlan('Elite BTC','BTC',20,'TH/s',499,12.00,90)">Buy Plan</button></div>
+    <div class="plan-card"><div class="plan-badge pb-blue">ETH Classic</div><div class="plan-name">ETC Miner</div><div class="plan-price">$89 <span>/ month</span></div><div class="plan-feature"><span>Hashrate</span><b>100 MH/s</b></div><div class="plan-feature"><span>Daily profit</span><b>~$1.50</b></div><div class="plan-feature"><span>Contract</span><b>30 days</b></div><div class="plan-feature"><span>Coin</span><b>ETH Classic</b></div><button class="buy-btn" onclick="confirmPlan('ETC Miner','ETC',100,'MH/s',89,1.50,30)">Buy Plan</button></div>
+    <div class="plan-card"><div class="plan-badge pb-red">Monero</div><div class="plan-name">XMR Miner</div><div class="plan-price">$69 <span>/ month</span></div><div class="plan-feature"><span>Hashrate</span><b>10 KH/s</b></div><div class="plan-feature"><span>Daily profit</span><b>~$1.10</b></div><div class="plan-feature"><span>Contract</span><b>30 days</b></div><div class="plan-feature"><span>Coin</span><b>Monero</b></div><button class="buy-btn" onclick="confirmPlan('XMR Miner','XMR',10,'KH/s',69,1.10,30)">Buy Plan</button></div>
+    <div class="plan-card"><div class="plan-badge pb-purple">Litecoin</div><div class="plan-name">LTC Miner</div><div class="plan-price">$59 <span>/ month</span></div><div class="plan-feature"><span>Hashrate</span><b>500 MH/s</b></div><div class="plan-feature"><span>Daily profit</span><b>~$0.90</b></div><div class="plan-feature"><span>Contract</span><b>30 days</b></div><div class="plan-feature"><span>Coin</span><b>Litecoin</b></div><button class="buy-btn" onclick="confirmPlan('LTC Miner','LTC',500,'MH/s',59,0.90,30)">Buy Plan</button></div>
+  </div>
+</div>
+
+<!-- ADS -->
+<div class="section" id="sec-ads">
+  <div class="ads-limit-bar">
+    <span class="ads-limit-label">Ads watched today</span>
+    <span class="ads-limit-val" id="adsCount">0 / 10</span>
+  </div>
+  <div id="adBoostBox" style="display:none" class="boost-banner" style="margin-bottom:12px">
+    <div class="boost-dot"></div>
+    <div style="flex:1">
+      <div class="boost-text">&#9889; Speed Boost Active — +10 GH/s</div>
+      <div class="boost-sub" id="adBoostSub">Expires in 30:00</div>
+      <div class="speed-bar-wrap" style="margin-top:6px"><div class="speed-bar-fill" id="adBoostBar" style="width:100%"></div></div>
+    </div>
+  </div>
+  <div class="ads-grid">
+    <div class="ad-offer-card"><div class="sponsored-label">Sponsored</div><div class="ad-offer-icon">&#128311;</div><div class="ad-offer-name">NiceHash</div><div class="ad-offer-desc">World's leading Bitcoin mining marketplace. Sell your hashrate and earn daily.</div><div class="ad-offer-reward"><span class="ad-offer-reward-label">Watch reward</span><span class="ad-offer-reward-val">+10 GH/s (30 min)</span></div><button class="watch-btn" id="wb1" onclick="watchAd('NiceHash','World\'s leading Bitcoin mining marketplace. Sell your hashrate, earn daily BTC.')">&#9654; Watch 30s Ad</button></div>
+    <div class="ad-offer-card"><div class="sponsored-label">Sponsored</div><div class="ad-offer-icon">&#128992;</div><div class="ad-offer-name">Binance</div><div class="ad-offer-desc">Trade 350+ cryptocurrencies on the world's largest exchange. Low fees guaranteed.</div><div class="ad-offer-reward"><span class="ad-offer-reward-label">Watch reward</span><span class="ad-offer-reward-val">+10 GH/s (30 min)</span></div><button class="watch-btn" id="wb2" onclick="watchAd('Binance','Trade 350+ cryptos on the world\'s largest exchange. Low fees, high liquidity.')">&#9654; Watch 30s Ad</button></div>
+    <div class="ad-offer-card"><div class="sponsored-label">Sponsored</div><div class="ad-offer-icon">&#128994;</div><div class="ad-offer-name">Coinbase</div><div class="ad-offer-desc">Buy, sell, and earn crypto safely. Trusted by 100 million users worldwide.</div><div class="ad-offer-reward"><span class="ad-offer-reward-label">Watch reward</span><span class="ad-offer-reward-val">+10 GH/s (30 min)</span></div><button class="watch-btn" id="wb3" onclick="watchAd('Coinbase','Buy, sell &amp; earn crypto safely. Trusted by 100M+ users worldwide.')">&#9654; Watch 30s Ad</button></div>
+    <div class="ad-offer-card"><div class="sponsored-label">Sponsored</div><div class="ad-offer-icon">&#128996;</div><div class="ad-offer-name">Bitdeer</div><div class="ad-offer-desc">Rent real ASIC mining rigs remotely. Powered by Bitmain. Start in minutes.</div><div class="ad-offer-reward"><span class="ad-offer-reward-label">Watch reward</span><span class="ad-offer-reward-val">+10 GH/s (30 min)</span></div><button class="watch-btn" id="wb4" onclick="watchAd('Bitdeer','Rent real ASIC mining rigs. Powered by Bitmain. Start earning in minutes.')">&#9654; Watch 30s Ad</button></div>
+  </div>
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.6">
+    <span style="color:var(--text);font-weight:500">How it works:</span> Watch each 30-second ad to earn +10 GH/s for 30 minutes. Max 10 ads per day. Each new ad refreshes the 30-minute timer. Boost stacks with daily rewards.
+  </div>
+</div>
+
+<!-- DAILY REWARD -->
+<div class="section" id="sec-daily">
+  <div class="daily-header">
+    <h2>Daily Login Rewards</h2>
+    <p>Claim every day. Resets to Day 1 every week. Day 7 = max speed!</p>
+  </div>
+  <div class="daily-grid" id="dailyGrid"></div>
+  <button class="claim-day-btn" id="claimDayBtn" onclick="claimDaily()">Claim Today's Reward</button>
+  <div id="dailyActiveBox" style="display:none" class="daily-active-box">
+    <div class="daily-active-title">Daily Boost Active</div>
+    <div class="speed-row"><span class="speed-label">Today's bonus</span><span class="speed-val" id="dailySpeedLabel">+5 GH/s</span></div>
+    <div class="speed-row"><span class="speed-label">Resets at midnight</span><span class="speed-val" id="midnightTimer">--:--:--</span></div>
+    <div class="speed-bar-wrap"><div class="speed-bar-fill" id="dailyBar" style="width:100%"></div></div>
+  </div>
+  <div class="weekly-info">
+    <div class="weekly-row"><span class="weekly-key">Current streak</span><span class="weekly-val" id="streakLabel">Day 0</span></div>
+    <div class="weekly-row"><span class="weekly-key">Week resets on</span><span class="weekly-val" id="weekResetLabel">--</span></div>
+    <div class="weekly-row"><span class="weekly-key">Day 7 grand reward</span><span class="weekly-val" style="color:var(--purple-light)">35 GH/s</span></div>
+    <div class="weekly-row"><span class="weekly-key">Total bonus this week</span><span class="weekly-val" id="totalBonusLabel">0 GH/s</span></div>
+  </div>
+</div>
+
+<!-- WALLET -->
+<div class="section" id="sec-wallet">
+  <div class="wallet-grid">
+    <div class="card">
+      <div class="card-title">Deposit Funds</div>
+      <label>Select coin</label>
+      <select id="depCoin" onchange="updateAddr()">
+        <option value="BTC">Bitcoin (BTC)</option>
+        <option value="ETH">Ethereum (ETH)</option>
+        <option value="USDT">USDT (TRC20)</option>
+        <option value="LTC">Litecoin (LTC)</option>
+      </select>
+      <label>Your deposit address</label>
+      <div class="addr-box" id="depAddr">bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh</div>
+      <button class="form-btn" style="margin-top:10px" onclick="copyAddr()">Copy Address</button>
+    </div>
+    <div class="card">
+      <div class="card-title">Withdraw Earnings</div>
+      <label>Your wallet address</label>
+      <input type="text" id="wdAddr" placeholder="Enter destination address">
+      <label>Amount (USD)</label>
+      <input type="number" id="wdAmt" placeholder="Minimum $5.00" min="5" step="0.01">
+      <label>Coin</label>
+      <select id="wdCoin"><option>Bitcoin (BTC)</option><option>Ethereum (ETH)</option><option>USDT (TRC20)</option></select>
+      <button class="form-btn" onclick="doWithdraw()">Request Withdrawal</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Transaction History</div>
+    <div id="txList"><div class="empty">No transactions yet.</div></div>
+  </div>
+</div>
+
+<!-- REFERRAL -->
+<div class="section" id="sec-ref">
+  <div class="ref-grid">
+    <div class="ref-stat"><div class="metric-label">Referrals</div><div class="metric-val">0</div></div>
+    <div class="ref-stat"><div class="metric-label">Commission</div><div class="metric-val">$0.00</div></div>
+    <div class="ref-stat"><div class="metric-label">Rate</div><div class="metric-val">5%</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Your Referral Code</div>
+    <div class="ref-code">CLOUD-7X4K</div>
+    <div style="display:flex;gap:8px">
+      <button class="form-btn" onclick="copyRef()">Copy Link</button>
+      <button class="form-btn secondary" onclick="shareRef()">Share</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">How it Works</div>
+    <div class="step-grid">
+      <div class="step"><div class="step-num">1</div><div class="step-title">Share your code</div><div class="step-desc">Share your referral link on social media or with friends</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-title">They sign up</div><div class="step-desc">Your friend registers and buys any mining plan</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-title">You earn 5%</div><div class="step-desc">5% of every purchase they make, paid daily to your wallet</div></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+const ADDRS={BTC:'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh',ETH:'0x71C7656EC7ab88b098defB751B7401B5f6d8976F',USDT:'TYDzsYUEpvnYmQk4zGP9sWWcTEd2MiAtHp',LTC:'ltc1qhkgq8uhpqx9g4nk79kex5j2j7r6ge73gmr0v8r'};
+const DAILY=[{day:1,speed:5,icon:'☀️'},{day:2,speed:8,icon:'⚡'},{day:3,speed:10,icon:'🔥'},{day:4,speed:12,icon:'💎'},{day:5,speed:15,icon:'🚀'},{day:6,speed:20,icon:'🌟'},{day:7,speed:35,icon:'👑',special:true}];
+
+let balance=0,totalEarned=0,todayProfit=0,contracts=[],transactions=[];
+let earningsData=Array(24).fill(0),pendingPlan=null;
+let adBoostGH=0,adBoostSecs=0,adBoostIv=null;
+let adIv=null,adSecs=30,adRunning=false;
+let adsToday=parseInt(ls('adsToday')||'0');
+let lastAdDate=ls('lastAdDate')||'';
+let streak=parseInt(ls('streak')||'0');
+let lastClaim=ls('lastClaim')||'';
+let weekStart=ls('weekStart')||'';
+let dailyGH=0,claimedToday=false;
+
+function ls(k,v){if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v);}
+function today(){return new Date().toDateString();}
+
+const chartCtx=document.getElementById('earningsChart').getContext('2d');
+const chart=new Chart(chartCtx,{type:'line',data:{labels:Array.from({length:24},(_,i)=>`${String(i).padStart(2,'0')}:00`),datasets:[{data:earningsData,borderColor:'#2ea043',backgroundColor:'rgba(46,160,67,0.07)',borderWidth:1.5,pointRadius:0,fill:true,tension:0.4}]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:500},scales:{x:{ticks:{color:'#484f58',font:{size:10},maxTicksLimit:8},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#484f58',font:{size:10},callback:v=>'$'+v.toFixed(3)},grid:{color:'rgba(255,255,255,0.04)'}}},plugins:{legend:{display:false}}}});
+
+function tab(n,b){document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));document.getElementById('sec-'+n).classList.add('active');b.classList.add('active');}
+
+function showToast(msg,warn){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show'+(warn?' warn':'');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3000);}
+
+function updateAddr(){document.getElementById('depAddr').textContent=ADDRS[document.getElementById('depCoin').value]||'';}
+function copyAddr(){navigator.clipboard?.writeText(document.getElementById('depAddr').textContent).catch(()=>{});showToast('Address copied!');}
+function copyRef(){navigator.clipboard?.writeText('https://cloudminepro.io/ref/CLOUD-7X4K').catch(()=>{});showToast('Referral link copied!');}
+function shareRef(){if(navigator.share){navigator.share({title:'CloudMine Pro',text:'Join me on CloudMine Pro!',url:'https://cloudminepro.io/ref/CLOUD-7X4K'});}else copyRef();}
+
+function confirmPlan(name,coin,hr,unit,price,dp,days){
+  pendingPlan={name,coin,hr,unit,price,dp,days};
+  document.getElementById('modalTitle').textContent='Confirm — '+name;
+  document.getElementById('modalBody').innerHTML=`<div class="modal-row"><span class="modal-key">Plan</span><span class="modal-val">${name}</span></div><div class="modal-row"><span class="modal-key">Hashrate</span><span class="modal-val">${hr} ${unit}</span></div><div class="modal-row"><span class="modal-key">Daily profit</span><span class="modal-val">~$${dp.toFixed(2)}</span></div><div class="modal-row"><span class="modal-key">Duration</span><span class="modal-val">${days} days</span></div><div class="modal-row"><span class="modal-key">Cost</span><span class="modal-val">$${price.toFixed(2)}</span></div><div class="modal-row"><span class="modal-key">Est. return</span><span class="modal-val">$${(dp*days).toFixed(2)}</span></div>`;
+  document.getElementById('modalConfirmBtn').onclick=activatePlan;
+  document.getElementById('confirmModal').classList.add('show');
+}
+function closeModal(){document.getElementById('confirmModal').classList.remove('show');pendingPlan=null;}
+function activatePlan(){if(!pendingPlan)return;const p=pendingPlan;contracts.push({...p,daysLeft:p.days,earned:0,id:Date.now(),startDate:new Date().toLocaleDateString()});addTx('Plan Purchase',p.name,-p.price);closeModal();renderContracts();renderTxList();updateMetrics();showToast(p.name+' activated!');}
+
+function addTx(type,detail,amount){transactions.unshift({type,detail,amount,date:new Date().toLocaleString()});if(transactions.length>50)transactions.pop();}
+
+function renderContracts(){
+  const el=document.getElementById('contractList');
+  if(!contracts.length){el.innerHTML='<div class="empty">No active contracts. Go to Mining Plans to start.</div>';return;}
+  el.innerHTML=contracts.map(c=>{
+    const pct=Math.round((c.days-c.daysLeft)/c.days*100);
+    const bBadge=adBoostGH>0?'<span class="badge badge-boost">+'+adBoostGH+' GH/s ad boost</span>':'';
+    const dBadge=dailyGH>0?'<span class="badge badge-active">+'+dailyGH+' GH/s daily</span>':'';
+    return`<div class="contract-row"><div class="coin-icon ci-${c.coin}">${c.coin}</div><div class="contract-info"><div class="contract-name">${c.name}</div><div class="contract-meta">${c.hr} ${c.unit} &bull; ${c.daysLeft}d remaining</div><div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div></div><div class="contract-earn"><div class="earn-val">+$${c.earned.toFixed(4)}</div><div class="earn-label">session earned</div><span class="badge badge-active">Active</span>${bBadge}${dBadge}</div></div>`;
+  }).join('');
+}
+
+function renderTxList(){
+  const el=document.getElementById('txList');
+  if(!transactions.length){el.innerHTML='<div class="empty">No transactions yet.</div>';return;}
+  el.innerHTML=transactions.map(t=>`<div class="tx-row"><div><div style="font-weight:500;color:var(--text)">${t.type}</div><div class="tx-type">${t.detail} &bull; ${t.date}</div></div><div class="${t.amount>=0?'tx-in':'tx-out'}">${t.amount>=0?'+':'-'}$${Math.abs(t.amount).toFixed(4)}</div></div>`).join('');
+}
+
+function updateMetrics(){
+  const active=contracts.filter(c=>c.daysLeft>0).length;
+  const baseGH=contracts.reduce((s,c)=>s+(c.unit==='TH/s'?c.hr*1000:c.unit==='MH/s'?c.hr/1000:c.hr),0);
+  const total=baseGH+adBoostGH+dailyGH;
+  document.getElementById('mTotal').textContent='$'+totalEarned.toFixed(4);
+  document.getElementById('mToday').textContent='$'+todayProfit.toFixed(4);
+  document.getElementById('mActive').textContent=active;
+  document.getElementById('mSpeed').textContent=total.toFixed(2);
+  document.getElementById('balBadge').textContent='$'+balance.toFixed(4);
+  const dashBoost=document.getElementById('dashBoostBanner');
+  dashBoost.style.display=adBoostGH>0?'flex':'none';
+  const dashDaily=document.getElementById('dashDailyBanner');
+  dashDaily.style.display=dailyGH>0?'flex':'none';
+  if(dailyGH>0)document.getElementById('dashDailySub').textContent='+'+dailyGH+' GH/s from daily streak (Day '+streak+')';
+}
+
+function doWithdraw(){
+  const addr=document.getElementById('wdAddr').value.trim();
+  const amt=parseFloat(document.getElementById('wdAmt').value);
+  if(!addr){showToast('Enter a wallet address',true);return;}
+  if(!amt||amt<5){showToast('Minimum withdrawal is $5.00',true);return;}
+  if(amt>balance){showToast('Insufficient balance',true);return;}
+  balance-=amt;addTx('Withdrawal',addr.slice(0,14)+'...',-amt);renderTxList();updateMetrics();
+  document.getElementById('wdAddr').value='';document.getElementById('wdAmt').value='';
+  showToast('Withdrawal of $'+amt.toFixed(2)+' submitted!');
+}
+
+/* ===== AD SYSTEM ===== */
+function checkAdReset(){
+  if(lastAdDate!==today()){adsToday=0;ls('adsToday','0');ls('lastAdDate',today());lastAdDate=today();}
+  document.getElementById('adsCount').textContent=adsToday+' / 10';
+}
+
+function watchAd(brand,tagline){
+  if(adsToday>=10){showToast('Daily limit reached (10 ads/day). Come back tomorrow!',true);return;}
+  if(adRunning){showToast('An ad is already playing.',true);return;}
+  adRunning=true;adSecs=30;
+  document.getElementById('adBrand').textContent=brand;
+  document.getElementById('adTagline').textContent=tagline;
+  document.getElementById('adProgFill').style.width='0%';
+  document.getElementById('adTimerBadge').textContent='0:30';
+  const btn=document.getElementById('adClaimBtn');
+  btn.disabled=true;btn.textContent='Watch to unlock reward...';
+  document.getElementById('adModal').classList.add('show');
+  adIv=setInterval(()=>{
+    adSecs--;
+    const pct=Math.round((30-adSecs)/30*100);
+    document.getElementById('adProgFill').style.width=pct+'%';
+    document.getElementById('adTimerBadge').textContent='0:'+String(adSecs).padStart(2,'0');
+    if(adSecs<=0){
+      clearInterval(adIv);
+      btn.disabled=false;btn.textContent='✓ Claim +10 GH/s Reward!';
+      document.getElementById('adTimerBadge').textContent='Done!';
+    }
+  },1000);
+}
+
+function claimAdReward(){
+  document.getElementById('adModal').classList.remove('show');
+  adRunning=false;clearInterval(adIv);
+  adsToday++;ls('adsToday',adsToday);
+  document.getElementById('adsCount').textContent=adsToday+' / 10';
+  adBoostGH=10;adBoostSecs=30*60;
+  document.getElementById('adBoostBox').style.display='flex';
+  clearInterval(adBoostIv);
+  adBoostIv=setInterval(()=>{
+    adBoostSecs--;
+    const m=Math.floor(adBoostSecs/60),s=adBoostSecs%60;
+    const label=m+':'+String(s).padStart(2,'0');
+    document.getElementById('adBoostSub').textContent='Expires in '+label;
+    document.getElementById('dashBoostSub').textContent='+10 GH/s ad boost — '+label+' remaining';
+    document.getElementById('adBoostBar').style.width=Math.round(adBoostSecs/(30*60)*100)+'%';
+    if(adBoostSecs<=0){
+      clearInterval(adBoostIv);adBoostGH=0;
+      document.getElementById('adBoostBox').style.display='none';
+      document.getElementById('dashBoostBanner').style.display='none';
+      updateMetrics();showToast('Ad boost expired. Watch another ad!',true);
+    }
+  },1000);
+  updateMetrics();showToast('Reward claimed! +10 GH/s for 30 minutes!');
+}
+
+function skipAd(){clearInterval(adIv);document.getElementById('adModal').classList.remove('show');adRunning=false;showToast('Ad skipped — no reward.',true);}
+
+/* ===== DAILY REWARD SYSTEM ===== */
+function initDaily(){
+  if(!weekStart){weekStart=today();ls('weekStart',weekStart);}
+  const ws=new Date(weekStart),now=new Date();
+  const daysPassed=Math.floor((now-ws)/(86400000));
+  if(daysPassed>=7){
+    streak=0;weekStart=today();lastClaim='';
+    ls('streak','0');ls('weekStart',weekStart);ls('lastClaim','');
+    showToast('New week started! Rewards reset to Day 1.');
+  }
+  claimedToday=(lastClaim===today());
+  if(claimedToday){
+    const r=DAILY[Math.min(streak-1,6)];
+    if(r){dailyGH=r.speed;document.getElementById('dailyActiveBox').style.display='block';document.getElementById('dailySpeedLabel').textContent='+'+r.speed+' GH/s';}
+  }
+  renderDailyGrid();updateDailyUI();
+}
+
+function renderDailyGrid(){
+  document.getElementById('dailyGrid').innerHTML=DAILY.map((r,i)=>{
+    const dn=i+1;
+    const isClaimed=streak>=dn;
+    const isToday=streak+1===dn&&!claimedToday;
+    const isLocked=dn>streak+(claimedToday?0:1);
+    let cls='day-card';
+    if(isClaimed)cls+=' claimed';
+    else if(isToday)cls+=' today';
+    else if(isLocked)cls+=' locked';
+    if(r.special)cls+=' special';
+    return`<div class="${cls}">${isClaimed?'<div class="day-check">✓</div>':''}<div class="day-label">Day ${dn}</div><div class="day-icon">${r.icon}</div><div class="day-reward">+${r.speed} GH/s</div></div>`;
+  }).join('');
+}
+
+function updateDailyUI(){
+  document.getElementById('streakLabel').textContent='Day '+streak;
+  const ws=new Date(weekStart);
+  const rd=new Date(ws.getTime()+7*86400000);
+  document.getElementById('weekResetLabel').textContent=rd.toLocaleDateString();
+  const total=DAILY.slice(0,streak).reduce((s,r)=>s+r.speed,0);
+  document.getElementById('totalBonusLabel').textContent=total+' GH/s';
+  const btn=document.getElementById('claimDayBtn');
+  if(claimedToday){btn.disabled=true;btn.textContent='Already claimed — come back tomorrow!';}
+  else if(streak>=7){btn.disabled=true;btn.textContent='Week complete! Resets soon.';}
+  else{const r=DAILY[streak];btn.disabled=false;btn.textContent='Claim Day '+(streak+1)+' Reward (+'+r.speed+' GH/s)';}
+}
+
+function claimDaily(){
+  if(claimedToday||streak>=7)return;
+  streak++;lastClaim=today();claimedToday=true;
+  ls('streak',streak);ls('lastClaim',lastClaim);
+  const r=DAILY[streak-1];
+  dailyGH=r.speed;
+  document.getElementById('dailyActiveBox').style.display='block';
+  document.getElementById('dailySpeedLabel').textContent='+'+r.speed+' GH/s';
+  document.getElementById('rmIcon').textContent=r.icon;
+  document.getElementById('rmTitle').textContent='Day '+streak+' Reward Claimed!';
+  document.getElementById('rmDesc').textContent=r.special?'MAX SPEED UNLOCKED! Day 7 Grand Reward!':'Keep your streak going for bigger bonuses!';
+  document.getElementById('rmSpeed').textContent='+'+r.speed+' GH/s';
+  document.getElementById('rewardModal').classList.add('show');
+  renderDailyGrid();updateDailyUI();updateMetrics();
+}
+function closeRewardModal(){document.getElementById('rewardModal').classList.remove('show');}
+
+function updateMidnightTimer(){
+  const now=new Date(),midnight=new Date(now);
+  midnight.setHours(24,0,0,0);
+  const diff=midnight-now;
+  const h=Math.floor(diff/3600000),m=Math.floor((diff%3600000)/60000),s=Math.floor((diff%60000)/1000);
+  const label=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  document.getElementById('midnightTimer').textContent=label;
+  document.getElementById('dailyBar').style.width=Math.max(0,Math.round((1-diff/86400000)*100))+'%';
+}
+
+/* ===== MAIN TICK ===== */
+setInterval(()=>{
+  if(!contracts.length)return;
+  const baseRate=contracts.reduce((s,c)=>s+c.dp,0);
+  const mult=1+(adBoostGH+dailyGH)/100;
+  const tick=baseRate/3600*3*mult;
+  contracts.forEach(c=>{c.earned+=c.dp/3600*3*mult;});
+  totalEarned+=tick;todayProfit+=tick;balance+=tick;
+  const hr=new Date().getHours();
+  earningsData[hr]=parseFloat(((earningsData[hr]||0)+tick).toFixed(6));
+  chart.data.datasets[0].data=[...earningsData];chart.update('none');
+  if(Math.random()>0.6){addTx('Mining Reward',contracts[0]?.name||'Contract',tick);renderTxList();}
+  renderContracts();updateMetrics();
+},3000);
+
+setInterval(updateMidnightTimer,1000);
+checkAdReset();
+initDaily();
+updateMetrics();
+</script>
+</body>
+</html>
